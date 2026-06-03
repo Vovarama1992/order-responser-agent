@@ -8,6 +8,7 @@ import (
 	"fl-agent/internal/gpt"
 	"fl-agent/internal/service"
 	"fl-agent/internal/source/fl"
+	"fl-agent/internal/source/freelance"
 	"fl-agent/internal/storage"
 	"fl-agent/internal/telegram"
 )
@@ -15,7 +16,6 @@ import (
 func main() {
 	config.LoadEnv()
 
-	source := fl.NewSource()
 	gptClient := gpt.New()
 	telegramSender := telegram.New()
 
@@ -24,23 +24,35 @@ func main() {
 		log.Fatal(err)
 	}
 
-	watcher := service.NewWatcher(
-		source,
-		gptClient,
-		telegramSender,
-		store,
-	)
-
-	if err := watcher.RunOnce(); err != nil {
-		log.Println(err)
+	watchers := []*service.Watcher{
+		service.NewWatcher(
+			fl.NewSource(),
+			gptClient,
+			telegramSender,
+			store,
+		),
+		service.NewWatcher(
+			freelance.NewSource(),
+			gptClient,
+			telegramSender,
+			store,
+		),
 	}
+
+	runAll := func() {
+		for _, watcher := range watchers {
+			if err := watcher.RunOnce(); err != nil {
+				log.Println(err)
+			}
+		}
+	}
+
+	runAll()
 
 	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
 
 	for range ticker.C {
-		if err := watcher.RunOnce(); err != nil {
-			log.Println(err)
-		}
+		runAll()
 	}
 }

@@ -4,6 +4,10 @@ import "fl-agent/internal/model"
 
 type Source struct{}
 
+func (s *Source) Parse(order model.Order) (model.Order, error) {
+	return ParseOrder(order)
+}
+
 func NewSource() *Source {
 	return &Source{}
 }

@@ -6,26 +6,26 @@ import (
 	"strings"
 
 	"fl-agent/internal/gpt"
-	"fl-agent/internal/source/fl"
+	"fl-agent/internal/source"
 	"fl-agent/internal/storage"
 	"fl-agent/internal/telegram"
 )
 
 type Watcher struct {
-	source   *fl.Source
+	source   source.Source
 	gpt      *gpt.Client
 	telegram *telegram.Sender
 	storage  *storage.Storage
 }
 
 func NewWatcher(
-	source *fl.Source,
+	src source.Source,
 	gptClient *gpt.Client,
 	telegramSender *telegram.Sender,
 	storage *storage.Storage,
 ) *Watcher {
 	return &Watcher{
-		source:   source,
+		source:   src,
 		gpt:      gptClient,
 		telegram: telegramSender,
 		storage:  storage,
@@ -33,7 +33,7 @@ func NewWatcher(
 }
 
 func (w *Watcher) RunOnce() error {
-	log.Println("[WATCHER] cycle started")
+	log.Printf("[WATCHER] cycle started source=%s\n", w.source.Name())
 
 	orders, err := w.source.Fetch()
 	if err != nil {
@@ -43,7 +43,12 @@ func (w *Watcher) RunOnce() error {
 	log.Printf("[WATCHER] fetched=%d\n", len(orders))
 
 	for _, order := range orders {
-		log.Printf("[WATCHER] order=%s source=%s title=%s\n", order.ID, order.Source, order.Title)
+		log.Printf(
+			"[WATCHER] order=%s source=%s title=%s\n",
+			order.ID,
+			order.Source,
+			order.Title,
+		)
 
 		exists, err := w.storage.Exists(order.Source, order.ID)
 		if err != nil {
@@ -52,19 +57,31 @@ func (w *Watcher) RunOnce() error {
 		}
 
 		if exists {
-			log.Printf("[WATCHER] skip already seen source=%s id=%s\n", order.Source, order.ID)
+			log.Printf(
+				"[WATCHER] skip already seen source=%s id=%s\n",
+				order.Source,
+				order.ID,
+			)
 			continue
 		}
 
-		log.Printf("[WATCHER] parse order=%s source=%s\n", order.ID, order.Source)
+		log.Printf(
+			"[WATCHER] parse order=%s source=%s\n",
+			order.ID,
+			order.Source,
+		)
 
-		fullOrder, err := fl.ParseOrder(order)
+		fullOrder, err := w.source.Parse(order)
 		if err != nil {
 			log.Printf("[WATCHER] parse error=%v\n", err)
 			continue
 		}
 
-		log.Printf("[WATCHER] gpt request order=%s source=%s\n", order.ID, order.Source)
+		log.Printf(
+			"[WATCHER] gpt request order=%s source=%s\n",
+			order.ID,
+			order.Source,
+		)
 
 		result, err := w.gpt.Review(
 			fullOrder.Title,
@@ -76,7 +93,11 @@ func (w *Watcher) RunOnce() error {
 			continue
 		}
 
-		if err := w.storage.Save(order.Source, order.ID, order.URL); err != nil {
+		if err := w.storage.Save(
+			order.Source,
+			order.ID,
+			order.URL,
+		); err != nil {
 			log.Printf("[WATCHER] storage save error=%v\n", err)
 		}
 
@@ -88,20 +109,32 @@ func (w *Watcher) RunOnce() error {
 		)
 
 		if !isAllowedCategory(result.Category) {
-			log.Printf("[WATCHER] filtered order=%s source=%s\n", order.ID, order.Source)
+			log.Printf(
+				"[WATCHER] filtered order=%s source=%s\n",
+				order.ID,
+				order.Source,
+			)
 			continue
 		}
 
 		message := formatMessage(fullOrder.URL, result)
 
-		log.Printf("[WATCHER] telegram send order=%s source=%s\n", order.ID, order.Source)
+		log.Printf(
+			"[WATCHER] telegram send order=%s source=%s\n",
+			order.ID,
+			order.Source,
+		)
 
 		if err := w.telegram.Send(message); err != nil {
 			log.Printf("[WATCHER] telegram error=%v\n", err)
 			continue
 		}
 
-		log.Printf("[WATCHER] telegram sent order=%s source=%s\n", order.ID, order.Source)
+		log.Printf(
+			"[WATCHER] telegram sent order=%s source=%s\n",
+			order.ID,
+			order.Source,
+		)
 	}
 
 	log.Println("[WATCHER] cycle finished")

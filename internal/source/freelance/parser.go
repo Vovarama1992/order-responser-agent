@@ -89,7 +89,7 @@ func ParseProjects() ([]model.Order, error) {
 		})
 	})
 
-	limit := 10
+	limit := 20
 	if len(orders) < limit {
 		limit = len(orders)
 	}

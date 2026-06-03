@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -35,8 +36,17 @@ func (s *Sender) Send(text string) error {
 	}
 	defer resp.Body.Close()
 
+	body, readErr := io.ReadAll(resp.Body)
+	if readErr != nil {
+		return readErr
+	}
+
 	if resp.StatusCode >= 300 {
-		return fmt.Errorf("telegram status: %s", resp.Status)
+		return fmt.Errorf(
+			"telegram status: %s, body: %s",
+			resp.Status,
+			string(body),
+		)
 	}
 
 	return nil

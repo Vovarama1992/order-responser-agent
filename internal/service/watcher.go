@@ -41,12 +41,7 @@ func (w *Watcher) RunOnce() error {
 
 	log.Printf("[WATCHER] fetched=%d\n", len(orders))
 
-	limit := 5
-	if len(orders) < limit {
-		limit = len(orders)
-	}
-
-	for _, order := range orders[:limit] {
+	for _, order := range orders {
 		log.Printf("[WATCHER] order=%s title=%s\n", order.ID, order.Title)
 
 		if w.seen[order.ID] {
@@ -77,7 +72,7 @@ func (w *Watcher) RunOnce() error {
 		}
 
 		log.Printf(
-			"[WATCHER] gpt response order=%s category=%s",
+			"[WATCHER] gpt response order=%s category=%s\n",
 			order.ID,
 			result.Category,
 		)

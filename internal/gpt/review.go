@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/responses"
@@ -77,19 +78,21 @@ price - рекомендуемая стоимость в рублях.
 			},
 		},
 	)
-
 	if err != nil {
 		return nil, err
 	}
 
+	raw := strings.TrimSpace(resp.OutputText())
+
+	fmt.Println("========== GPT RAW ==========")
+	fmt.Println(raw)
+	fmt.Println("======== END GPT RAW ========")
+
 	var result ReviewResult
 
-	err = json.Unmarshal(
-		[]byte(resp.OutputText()),
-		&result,
-	)
+	err = json.Unmarshal([]byte(raw), &result)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("json parse error: %w\nraw:\n%s", err, raw)
 	}
 
 	return &result, nil

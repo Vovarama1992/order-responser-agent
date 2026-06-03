@@ -8,10 +8,15 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-const projectsURL = "https://www.fl.ru/projects/category/programmirovanie/"
+var projectURLs = []string{
+	"https://www.fl.ru/projects/category/programmirovanie/",
+	"https://www.fl.ru/projects/category/saity/",
+	"https://www.fl.ru/projects/category/ai-iskusstvenniy-intellekt/",
+	"https://www.fl.ru/projects/category/avtomatizaciya-biznesa/",
+}
 
-func loadProjectsPage() (*goquery.Document, error) {
-	req, err := http.NewRequest(http.MethodGet, projectsURL, nil)
+func loadProjectsPage(url string) (*goquery.Document, error) {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +33,35 @@ func loadProjectsPage() (*goquery.Document, error) {
 }
 
 func ParseProjects() ([]model.Order, error) {
-	doc, err := loadProjectsPage()
+	seen := make(map[string]bool)
+	var orders []model.Order
+
+	for _, url := range projectURLs {
+		pageOrders, err := parseProjectsPage(url)
+		if err != nil {
+			return nil, err
+		}
+
+		limit := 5
+		if len(pageOrders) < limit {
+			limit = len(pageOrders)
+		}
+
+		for _, order := range pageOrders[:limit] {
+			if seen[order.ID] {
+				continue
+			}
+
+			seen[order.ID] = true
+			orders = append(orders, order)
+		}
+	}
+
+	return orders, nil
+}
+
+func parseProjectsPage(url string) ([]model.Order, error) {
+	doc, err := loadProjectsPage(url)
 	if err != nil {
 		return nil, err
 	}
@@ -67,5 +100,5 @@ func ParseProjects() ([]model.Order, error) {
 }
 
 func LoadForDebug() (*goquery.Document, error) {
-	return loadProjectsPage()
+	return loadProjectsPage(projectURLs[0])
 }

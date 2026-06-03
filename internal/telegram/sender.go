@@ -49,5 +49,9 @@ func (s *Sender) Send(text string) error {
 		)
 	}
 
-	return nil
+	return fmt.Errorf(
+		"TELEGRAM TEST %s body=%s",
+		resp.Status,
+		string(body),
+	)
 }

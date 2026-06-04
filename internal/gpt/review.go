@@ -84,7 +84,7 @@ price - рекомендуемая стоимость в рублях.
 	resp, err := c.client.Responses.New(
 		context.Background(),
 		responses.ResponseNewParams{
-			Model: shared.ResponsesModel("gpt-4.1"),
+			Model: shared.ResponsesModel("gpt-5"),
 			Input: responses.ResponseNewParamsInputUnion{
 				OfString: openai.String(prompt),
 			},

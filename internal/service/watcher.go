@@ -78,7 +78,48 @@ func (w *Watcher) RunOnce() error {
 		}
 
 		log.Printf(
-			"[WATCHER] gpt request order=%s source=%s\n",
+			"[WATCHER] filter request order=%s source=%s\n",
+			order.ID,
+			order.Source,
+		)
+
+		category, err := w.gpt.Filter(
+			fullOrder.Title,
+			fullOrder.Budget,
+			fullOrder.Description,
+		)
+		if err != nil {
+			log.Printf("[WATCHER] filter error=%v\n", err)
+			continue
+		}
+
+		if err := w.storage.Save(
+			order.Source,
+			order.ID,
+			order.URL,
+		); err != nil {
+			log.Printf("[WATCHER] storage save error=%v\n", err)
+		}
+
+		log.Printf(
+			"[WATCHER] filter response order=%s source=%s category=%s\n",
+			order.ID,
+			order.Source,
+			category,
+		)
+
+		if !isAllowedCategory(category) {
+			log.Printf(
+				"[WATCHER] filtered order=%s source=%s category=%s\n",
+				order.ID,
+				order.Source,
+				category,
+			)
+			continue
+		}
+
+		log.Printf(
+			"[WATCHER] gpt5 request order=%s source=%s\n",
 			order.ID,
 			order.Source,
 		)
@@ -93,29 +134,12 @@ func (w *Watcher) RunOnce() error {
 			continue
 		}
 
-		if err := w.storage.Save(
-			order.Source,
-			order.ID,
-			order.URL,
-		); err != nil {
-			log.Printf("[WATCHER] storage save error=%v\n", err)
-		}
-
 		log.Printf(
-			"[WATCHER] gpt response order=%s source=%s category=%s\n",
+			"[WATCHER] gpt5 response order=%s source=%s category=%s\n",
 			order.ID,
 			order.Source,
 			result.Category,
 		)
-
-		if !isAllowedCategory(result.Category) {
-			log.Printf(
-				"[WATCHER] filtered order=%s source=%s\n",
-				order.ID,
-				order.Source,
-			)
-			continue
-		}
 
 		message := formatMessage(fullOrder.URL, result)
 

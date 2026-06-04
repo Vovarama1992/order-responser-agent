@@ -1,16 +1,38 @@
-const { chromium } = require("playwright");
+const { chromium } = require("playwright-extra");
+const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+
+chromium.use(StealthPlugin());
 
 (async () => {
-  const browser = await chromium.launch({ headless: false });
-  const page = await browser.newPage();
+  try {
+    const browser = await chromium.launch({
+      headless: false,
+      channel: "chrome",
+    });
 
-  await page.goto("https://www.upwork.com/nx/search/jobs/?q=workflow%20engine");
+    browser.on("disconnected", () => {
+      console.log("BROWSER DISCONNECTED");
+    });
 
-  await page.waitForTimeout(600000);
+    const page = await browser.newPage();
 
-  console.log(await page.title());
+    page.on("close", () => {
+      console.log("PAGE CLOSED");
+    });
 
-  await page.screenshot({ path: "screen.png" });
+    page.on("crash", () => {
+      console.log("PAGE CRASH");
+    });
 
-  await browser.close();
+    await page.goto(
+      "https://www.upwork.com/nx/search/jobs/?q=workflow%20engine",
+      { waitUntil: "domcontentloaded" },
+    );
+
+    console.log("OPENED");
+
+    await new Promise(() => {});
+  } catch (e) {
+    console.error(e);
+  }
 })();

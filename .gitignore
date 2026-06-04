@@ -5,3 +5,4 @@ fl.html
 order-agent
 fl-agent
 .DS_Store
+upwork-test/**/node_modules/

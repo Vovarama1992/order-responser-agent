@@ -6,3 +6,7 @@ type ReviewResult struct {
 	Days     int    `json:"days"`
 	Price    int    `json:"price"`
 }
+
+type FilterResult struct {
+	Interesting bool `json:"interesting"`
+}

@@ -9,7 +9,7 @@ const { chromium } = require("playwright");
     },
   );
 
-  const page = context.pages()[0] || (await context.newPage());
+  const page = context.pages()[0];
 
   await page.goto(
     "https://www.upwork.com/nx/search/jobs/?q=workflow%20engine",

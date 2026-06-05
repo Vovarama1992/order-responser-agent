@@ -1,4 +1,7 @@
-const { chromium } = require("playwright");
+const { chromium } = require("playwright-extra");
+const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+
+chromium.use(StealthPlugin());
 
 (async () => {
   const context = await chromium.launchPersistentContext(
@@ -9,7 +12,7 @@ const { chromium } = require("playwright");
     },
   );
 
-  const page = context.pages()[0] || (await context.newPage());
+  const page = context.pages()[0];
 
   await page.goto(
     "https://www.upwork.com/nx/search/jobs/?q=workflow%20engine",

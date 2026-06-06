@@ -171,7 +171,8 @@ func isAllowedCategory(category string) bool {
 
 	return strings.Contains(category, "благородного дона") ||
 		strings.Contains(category, "дон с бодуна") ||
-		strings.Contains(category, "дона с бодуна")
+		strings.Contains(category, "дона с бодуна") ||
+		strings.Contains(category, "понурого")
 }
 
 func formatMessage(orderURL string, result *gpt.ReviewResult) string {

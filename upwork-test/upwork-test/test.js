@@ -12,27 +12,18 @@ chromium.use(StealthPlugin());
     },
   );
 
-  const page = context.pages()[0];
+  const cookies = await context.cookies();
 
-  await page.goto(
-    "https://www.upwork.com/nx/search/jobs/?q=workflow%20engine",
-    {
-      waitUntil: "domcontentloaded",
-    },
+  const auth = cookies.filter(c =>
+    [
+      "auth_session",
+      "master_access_token",
+      "master_refresh_token",
+      "XSRF-TOKEN",
+    ].includes(c.name),
   );
 
-  await page.waitForTimeout(5000);
-
-  const jobs = await page.locator("[data-test='JobTile']").count();
-
-  console.log("JOBS:", jobs);
-
-  if (jobs > 0) {
-    const first = page.locator("[data-test='JobTile']").first();
-
-    console.log("FIRST JOB:");
-    console.log(await first.textContent());
-  }
+  console.log(JSON.stringify(auth, null, 2));
 
   await new Promise(() => {});
 })();

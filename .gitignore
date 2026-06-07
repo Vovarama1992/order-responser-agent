@@ -6,3 +6,4 @@ order-agent
 fl-agent
 .DS_Store
 upwork-test/**/node_modules/
+internal/source/upwork/upwork-profile.tar.gz

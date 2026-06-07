@@ -9,6 +9,7 @@ import (
 	"fl-agent/internal/service"
 	"fl-agent/internal/source/fl"
 	"fl-agent/internal/source/freelance"
+	"fl-agent/internal/source/upwork"
 	"fl-agent/internal/storage"
 	"fl-agent/internal/telegram"
 )
@@ -37,8 +38,13 @@ func main() {
 			telegramSender,
 			store,
 		),
+		service.NewWatcher(
+			upwork.NewSource(),
+			gptClient,
+			telegramSender,
+			store,
+		),
 	}
-
 	runAll := func() {
 		for _, watcher := range watchers {
 			if err := watcher.RunOnce(); err != nil {

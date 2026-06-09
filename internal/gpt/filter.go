@@ -79,5 +79,32 @@ func (c *Client) Filter(
 		return "", err
 	}
 
+	result.Category = normalizeCategory(result.Category)
+
 	return result.Category, nil
+
+}
+
+func normalizeCategory(category string) string {
+	category = strings.TrimSpace(category)
+
+	switch {
+	case strings.HasPrefix(category, "а"):
+		return "а) Чистая архитектура для благородного дона"
+
+	case strings.HasPrefix(category, "б"):
+		return "б) Для дона с бодуна"
+
+	case strings.HasPrefix(category, "в"):
+		return "в) Для понурого дона"
+
+	case strings.HasPrefix(category, "г"):
+		return "г) Хлам"
+
+	case strings.HasPrefix(category, "д"):
+		return "д) Не моя специализация"
+
+	default:
+		return category
+	}
 }

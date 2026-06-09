@@ -107,5 +107,7 @@ price - рекомендуемая стоимость в рублях.
 		return nil, fmt.Errorf("json parse error: %w\nraw:\n%s", err, raw)
 	}
 
+	result.Category = NormalizeCategory(result.Category)
+
 	return &result, nil
 }

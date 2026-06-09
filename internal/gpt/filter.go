@@ -79,13 +79,13 @@ func (c *Client) Filter(
 		return "", err
 	}
 
-	result.Category = normalizeCategory(result.Category)
+	result.Category = NormalizeCategory(result.Category)
 
 	return result.Category, nil
 
 }
 
-func normalizeCategory(category string) string {
+func NormalizeCategory(category string) string {
 	category = strings.TrimSpace(category)
 
 	switch {

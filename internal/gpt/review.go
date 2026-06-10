@@ -109,5 +109,9 @@ price - рекомендуемая стоимость в рублях.
 
 	result.Category = NormalizeCategory(result.Category)
 
+	if !IsKnownCategory(result.Category) {
+		result.Category = "а) Чистая архитектура для благородного дона"
+	}
+
 	return &result, nil
 }

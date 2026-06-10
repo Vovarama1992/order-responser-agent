@@ -81,8 +81,11 @@ func (c *Client) Filter(
 
 	result.Category = NormalizeCategory(result.Category)
 
-	return result.Category, nil
+	if !IsKnownCategory(result.Category) {
+		result.Category = "а) Чистая архитектура для благородного дона"
+	}
 
+	return result.Category, nil
 }
 
 func NormalizeCategory(category string) string {
